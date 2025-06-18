@@ -5,3 +5,4 @@ torch
 pandas
 scikit-learn
 python-multipart
+gdown

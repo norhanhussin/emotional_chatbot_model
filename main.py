@@ -9,6 +9,7 @@ import uvicorn
 import os
 import requests
 import zipfile
+import gdown
 
 # ========== Download and Extract Model ==========
 
@@ -16,13 +17,12 @@ def download_and_extract_model():
     model_dir = "bert_emotion_model"
     if not os.path.exists(model_dir):
         print("🔽 Downloading model zip file...")
-        url = "https://drive.google.com/uc?export=download&id=1edAuAq4w5lOPUB5wfYrDcp9mgE_fSlj7"
+
+        url = "https://drive.google.com/uc?id=1edAuAq4w5lOPUB5wfYrDcp9mgE_fSlj7"
         zip_path = "bert_emotion_model.zip"
         
-        response = requests.get(url)
-        with open(zip_path, "wb") as f:
-            f.write(response.content)
-        
+        gdown.download(url, zip_path, quiet=False)
+
         print("📦 Extracting model files...")
         with zipfile.ZipFile(zip_path, 'r') as zip_ref:
             zip_ref.extractall(model_dir)
@@ -30,10 +30,8 @@ def download_and_extract_model():
         os.remove(zip_path)
         print("✅ Model is ready.")
 
-@app.on_event("startup")
-def startup_event():
-    download_and_extract_model()
-
+# ⛳ نحمّل النموذج في البداية قبل أي حاجة
+download_and_extract_model()
 
 # ========== Load Model and Data ==========
 
