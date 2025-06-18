@@ -30,7 +30,10 @@ def download_and_extract_model():
         os.remove(zip_path)
         print("✅ Model is ready.")
 
-download_and_extract_model()
+@app.on_event("startup")
+def startup_event():
+    download_and_extract_model()
+
 
 # ========== Load Model and Data ==========
 
