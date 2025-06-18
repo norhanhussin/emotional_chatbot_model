@@ -6,9 +6,34 @@ from transformers import BertTokenizer, BertForSequenceClassification
 from sklearn.preprocessing import LabelEncoder
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
-import os  # جديد
+import os
+import requests
+import zipfile
+
+# ========== Download and Extract Model ==========
+
+def download_and_extract_model():
+    model_dir = "bert_emotion_model"
+    if not os.path.exists(model_dir):
+        print("🔽 Downloading model zip file...")
+        url = "https://drive.google.com/uc?export=download&id=1edAuAq4w5lOPUB5wfYrDcp9mgE_fSlj7"
+        zip_path = "bert_emotion_model.zip"
+        
+        response = requests.get(url)
+        with open(zip_path, "wb") as f:
+            f.write(response.content)
+        
+        print("📦 Extracting model files...")
+        with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+            zip_ref.extractall(model_dir)
+        
+        os.remove(zip_path)
+        print("✅ Model is ready.")
+
+download_and_extract_model()
 
 # ========== Load Model and Data ==========
+
 model_path = "./bert_emotion_model"
 responses_csv_path = "./emotional_chatbot_responses.csv"
 
@@ -26,6 +51,7 @@ le = LabelEncoder()
 le.fit(emotion_labels)
 
 # ========== Prediction Function ==========
+
 def predict_emotion(text):
     with torch.no_grad():
         encoding = tokenizer(text, return_tensors='pt', truncation=True, padding='max_length', max_length=128)
@@ -38,6 +64,7 @@ def predict_emotion(text):
         return le.inverse_transform([predicted_label])[0]
 
 # ========== FastAPI Setup ==========
+
 app = FastAPI()
 
 app.add_middleware(
@@ -67,5 +94,6 @@ def get_emotion_response(message: Message):
     }
 
 # ========== Run the Server ==========
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=int(os.environ.get("PORT", 10000)))
